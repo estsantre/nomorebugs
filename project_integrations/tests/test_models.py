@@ -3,7 +3,8 @@
 from django.contrib.auth.models import User
 from django.test import TestCase
 from project_integrations.models import Project, APIKey
-import uuid
+from uuid import uuid4, UUID
+from django.db.utils import IntegrityError
 
 
 class APIKeyModelTest(TestCase):
@@ -29,7 +30,7 @@ class APIKeyModelTest(TestCase):
 
         # Check if the key is a valid UUID
         try:
-            uuid_obj = uuid.UUID(str(api_key.key), version=4)
+            uuid_obj = UUID(str(api_key.key), version=4)
         except ValueError:
             uuid_obj = None
         self.assertIsNotNone(uuid_obj)
@@ -58,12 +59,14 @@ class ProjectModelTest(TestCase):
 
     def test_create_project(self):
         """Test that a project can be created and associated with a user."""
-        project = Project.objects.create(name='Test Project', user=self.user)
+        uuid = uuid4()
+        project = Project.objects.create(name='Test Project', user=self.user, uuid=uuid)
 
         # Check if the project is created successfully
         self.assertIsInstance(project, Project)
         self.assertEqual(project.name, 'Test Project')
         self.assertEqual(project.user, self.user)
+        self.assertEqual(project.uuid, uuid)
 
     def test_project_name_max_length(self):
         """Test that the name field has a max length of 100 characters."""
@@ -78,3 +81,11 @@ class ProjectModelTest(TestCase):
 
         # Check that the __str__ method returns the correct project name
         self.assertEqual(str(project), 'My Project')
+
+    def test_project_uuid_uniqueness(self):
+        """Test that the UUID field of the project is unique."""
+        uuid = uuid4()
+        Project.objects.create(name='Project 1', user=self.user, uuid=uuid)
+
+        with self.assertRaises(IntegrityError):
+            Project.objects.create(name='Project 2', user=self.user, uuid=uuid)

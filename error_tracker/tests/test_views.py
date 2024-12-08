@@ -33,7 +33,7 @@ class ErrorTrackerTests(APITestCase):
         data = {
             "error_message": "Sample error message",
             "environment": "Production",
-            "project": self.project.id,
+            "project": self.project.uuid,
         }
         self.client.credentials(HTTP_AUTHORIZATION='')  # Clear JWT
         self.client.credentials(HTTP_API_KEY=self.api_key.key)  # Set APIKey in headers
@@ -92,7 +92,7 @@ class ErrorTrackerTests(APITestCase):
         data = {
             "error_message": "Sample error message",
             "environment": "Production",
-            "project": another_project.id,
+            "project": another_project.uuid,
         }
         self.client.credentials(HTTP_AUTHORIZATION='')
 

@@ -1,7 +1,7 @@
 # error_tracker/permissions.py
 from rest_framework.permissions import BasePermission
 from rest_framework.exceptions import PermissionDenied
-from project_integrations.models import APIKey
+from project_integrations.models import APIKey, Project
 
 
 class HasAPIKeyPermission(BasePermission):
@@ -12,10 +12,15 @@ class HasAPIKeyPermission(BasePermission):
     def has_permission(self, request, view):
         if request.method == 'POST':
             api_key = request.headers.get('API-Key')
-            project_id = request.data.get('project')
+            project_uuid = request.data.get('project')
 
-            if not api_key or not project_id:
+            if not api_key or not project_uuid:
                 return False
+
+            try:
+                project_id = Project.objects.get(uuid=project_uuid).id
+            except Project.DoesNotExist:
+                raise PermissionDenied("Invalid project UUID.")
 
             try:
                 # Fetch the APIKey and check if it is associated with the given project
