@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'error_tracker',
     'project_integrations',
     'user_management',
+    'analyzer',
     'coverage',
 ]
 
